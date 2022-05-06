@@ -1,3 +1,5 @@
+#ifndef __static__project_one__
+#define __static__project_one__
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,13 +13,11 @@ int main(int argc, char* argv[])
 	const int buf_row_size = 10;
 	const int buf_col_size = 400;
 	int msgsize = 400 * 10 * sizeof(int);
-	int np, me, i, col, j, m, n, color;
+	int np, me, i, col, j, m, n;
 	int map[400][400];
-	int temp_map[400][10];
-	int** X, ** Y;	//message buffer(2dim)
 	int blocklengths[] = { 1,1,1 };
 	int tag = 42;
-	coop temp_co, temp_color;
+	coop temp_co;
 	float scale_real, scale_img, real_min, real_max, disp_width, disp_height, img_max, img_min;
 	complex c;
 	const int nitems = 3;
@@ -96,3 +96,5 @@ int main(int argc, char* argv[])
 	MPI_Finalize();
 	exit(0);
 }
+
+#endif // 
