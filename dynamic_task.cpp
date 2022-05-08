@@ -7,16 +7,14 @@
 #include <stddef.h>
 #include "mpi.h"
 #include "project_sub.h"
+#pragma warning(disable:4996)
 
 int main(int argc, char* argv[])
 {
-	const int buf_row_size = 10;
-	const int buf_col_size = 400;
-	int np, me, col, i, j, m, n, count, k, proc_id;
+	int np, me, col, i, j, count, k, proc_id;
 	int map[400][400];
 	int blocklengths[] = { 1,1,1 };
 	int data_tag, result_tag, terminator_tag, source_tag;
-	coop temp_co;
 	float scale_real, scale_img, real_min, real_max, disp_width, disp_height, img_max, img_min;
 	complex c;
 	const int nitems = 3;
@@ -24,6 +22,10 @@ int main(int argc, char* argv[])
 	MPI_Datatype mpi_coor_type;
 	MPI_Aint	 offsets[3];
 	coop* list;
+	FILE* fp;
+	const char* filename = "new1.ppm";
+	static unsigned char rgb_color[3];
+	const char* comment = "# ";
 
 	offsets[0] = offsetof(coop, x);
 	offsets[1] = offsetof(coop, y);
@@ -67,7 +69,7 @@ int main(int argc, char* argv[])
 		}
 
 		do {
-			MPI_Recv(list, 400*10, mpi_coor_type, MPI_ANY_SOURCE, result_tag, MPI_COMM_WORLD, &status);
+			MPI_Recv(list, 400 * 10, mpi_coor_type, MPI_ANY_SOURCE, result_tag, MPI_COMM_WORLD, &status);
 			count--;
 			proc_id = status.MPI_SOURCE;
 			for (i = 0; i < 400 * 10; i++)
@@ -80,7 +82,25 @@ int main(int argc, char* argv[])
 			}
 			else
 				MPI_Send(&col, 1, MPI_INT, proc_id, terminator_tag, MPI_COMM_WORLD);
-		} while (count>0);
+		} while (count > 0);
+		fp = fopen(filename, "wb");
+		fprintf(fp, "P6\n %s\n %d\n %d\n %d\n", comment, 400, 400, 255);
+		for (i = 0; i < 400; i++) {
+			for (j = 0; j < 400; j++) {
+				if (map[i][j] == 255) {
+					rgb_color[0] = 0;
+					rgb_color[1] = 0;
+					rgb_color[2] = 0;
+				}
+				else {
+					rgb_color[0] = 255;
+					rgb_color[1] = 255;
+					rgb_color[2] = 255;
+				}
+				fwrite(rgb_color, 1, 3, fp);
+			}
+		}
+		fclose(fp);
 	}
 
 	else {
@@ -103,13 +123,7 @@ int main(int argc, char* argv[])
 			source_tag = status.MPI_TAG;
 		}
 	}
-	if (me == 0) {
-		for (i = 0; i < 400; i++) {
-			for (j = 0; j < 400; j++)
-				printf("%d ", map[i][j]);
-		}
-		printf("\n");
-	}
+
 	MPI_Type_free(&mpi_coor_type);
 	MPI_Finalize();
 	free(list);
