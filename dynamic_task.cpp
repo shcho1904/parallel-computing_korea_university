@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 		fprintf(fp, "P6\n %s\n %d\n %d\n %d\n", comment, 400, 400, 255);
 		for (i = 0; i < 400; i++) {
 			for (j = 0; j < 400; j++) {
-				if (map[i][j] == 255) {
+				if (map[j][i] == 255) {
 					rgb_color[0] = 0;
 					rgb_color[1] = 0;
 					rgb_color[2] = 0;
